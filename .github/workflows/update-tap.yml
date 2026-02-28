@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [release]
 
+permissions:
+  contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -11,48 +14,54 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download release assets and compute SHA256
+        working-directory: /tmp
         run: |
           TAG=${{ github.event.client_payload.tag }}
-          VERSION=${TAG#v}
 
           for arch in arm64 amd64; do
             curl -sL "https://github.com/infktd/snipt/releases/download/${TAG}/snipt-macos-${arch}.zip" \
               -o "macos-${arch}.zip"
-            curl -sL "https://github.com/infktd/snipt/releases/download/${TAG}/snipt-linux-${arch}.tar.gz" \
-              -o "linux-${arch}.tar.gz"
           done
+          curl -sL "https://github.com/infktd/snipt/releases/download/${TAG}/snipt-linux-amd64.tar.gz" \
+            -o "linux-amd64.tar.gz"
 
           SHA_MAC_ARM=$(shasum -a 256 macos-arm64.zip | awk '{print $1}')
           SHA_MAC_AMD=$(shasum -a 256 macos-amd64.zip | awk '{print $1}')
-          SHA_LINUX_ARM=$(shasum -a 256 linux-arm64.tar.gz | awk '{print $1}')
           SHA_LINUX_AMD=$(shasum -a 256 linux-amd64.tar.gz | awk '{print $1}')
 
-          # Update Formula SHA256 placeholders
-          sed -i "s|url \"https://github.com/infktd/snipt/releases/latest/download/|url \"https://github.com/infktd/snipt/releases/download/${TAG}/|g" Formula/snipt-cli.rb
+          echo "SHA_MAC_ARM=$SHA_MAC_ARM" >> "$GITHUB_ENV"
+          echo "SHA_MAC_AMD=$SHA_MAC_AMD" >> "$GITHUB_ENV"
+          echo "SHA_LINUX_AMD=$SHA_LINUX_AMD" >> "$GITHUB_ENV"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
 
-          # Replace SHA256 values in order (macOS arm, macOS intel, Linux arm, Linux intel)
+      - name: Update formula and cask
+        run: |
+          # Update Formula URLs and SHA256 values
+          sed -i "s|url \"https://github.com/infktd/snipt/releases/[^\"]*snipt-macos-arm64.zip\"|url \"https://github.com/infktd/snipt/releases/download/${TAG}/snipt-macos-arm64.zip\"|" Formula/snipt-cli.rb
+          sed -i "s|url \"https://github.com/infktd/snipt/releases/[^\"]*snipt-macos-amd64.zip\"|url \"https://github.com/infktd/snipt/releases/download/${TAG}/snipt-macos-amd64.zip\"|" Formula/snipt-cli.rb
+          sed -i "s|url \"https://github.com/infktd/snipt/releases/[^\"]*snipt-linux-amd64.tar.gz\"|url \"https://github.com/infktd/snipt/releases/download/${TAG}/snipt-linux-amd64.tar.gz\"|" Formula/snipt-cli.rb
+
+          # Replace SHA256 values in order (macOS arm, macOS intel, Linux intel)
           awk -v sha_mac_arm="$SHA_MAC_ARM" \
               -v sha_mac_amd="$SHA_MAC_AMD" \
-              -v sha_linux_arm="$SHA_LINUX_ARM" \
               -v sha_linux_amd="$SHA_LINUX_AMD" '
           BEGIN { n=0 }
           /sha256 "/ {
             n++
             if (n==1) sub(/"[^"]*"/, "\"" sha_mac_arm "\"")
             if (n==2) sub(/"[^"]*"/, "\"" sha_mac_amd "\"")
-            if (n==3) sub(/"[^"]*"/, "\"" sha_linux_arm "\"")
-            if (n==4) sub(/"[^"]*"/, "\"" sha_linux_amd "\"")
+            if (n==3) sub(/"[^"]*"/, "\"" sha_linux_amd "\"")
           }
           { print }' Formula/snipt-cli.rb > Formula/snipt-cli.rb.tmp
           mv Formula/snipt-cli.rb.tmp Formula/snipt-cli.rb
 
           # Update Cask to use versioned URL
-          sed -i "s|releases/latest/download/|releases/download/${TAG}/|g" Casks/snipt.rb
+          sed -i "s|releases/[^/]*/download/|releases/download/${TAG}/|" Casks/snipt.rb
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add -A
-          git commit -m "Update to ${{ github.event.client_payload.tag }}" || exit 0
+          git add Casks/ Formula/
+          git commit -m "Update to ${TAG}" || exit 0
           git push
