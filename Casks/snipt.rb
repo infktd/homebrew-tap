@@ -12,6 +12,12 @@ cask "snipt" do
 
   app "snipt.app"
 
+  caveats <<~EOS
+    snipt is not notarized. On first launch, macOS may block it.
+    To fix this, run:
+      xattr -cr /Applications/snipt.app
+  EOS
+
   zap trash: [
     "~/.config/snipt",
     "~/Library/Application Support/snipt",
