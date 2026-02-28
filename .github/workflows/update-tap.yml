@@ -55,9 +55,11 @@ jobs:
           { print }' Formula/snipt-cli.rb > Formula/snipt-cli.rb.tmp
           mv Formula/snipt-cli.rb.tmp Formula/snipt-cli.rb
 
-          # Update Cask version
+          # Update Cask version and SHA256
           VERSION=${TAG#v}
           sed -i "s|version \"[^\"]*\"|version \"${VERSION}\"|" Casks/snipt.rb
+          sed -i "s|arm:   \"[a-f0-9]*\"|arm:   \"${SHA_MAC_ARM}\"|" Casks/snipt.rb
+          sed -i "s|intel: \"[a-f0-9]*\"|intel: \"${SHA_MAC_AMD}\"|" Casks/snipt.rb
 
       - name: Commit and push
         run: |
