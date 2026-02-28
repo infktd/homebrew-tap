@@ -55,8 +55,9 @@ jobs:
           { print }' Formula/snipt-cli.rb > Formula/snipt-cli.rb.tmp
           mv Formula/snipt-cli.rb.tmp Formula/snipt-cli.rb
 
-          # Update Cask to use versioned URL
-          sed -i "s|releases/[^/]*/download/|releases/download/${TAG}/|" Casks/snipt.rb
+          # Update Cask version
+          VERSION=${TAG#v}
+          sed -i "s|version \"[^\"]*\"|version \"${VERSION}\"|" Casks/snipt.rb
 
       - name: Commit and push
         run: |
