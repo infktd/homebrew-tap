@@ -2,8 +2,8 @@ cask "snipt" do
   version "0.1.1"
 
   arch arm: "arm64", intel: "amd64"
-  sha256 arm:   "89970eb2d437efbed7a97d0e98774d220a76f876b668767e5f5a3ff9af78e89c",
-         intel: "f2d04c916a90ba8d64416ed432cbae4939a82e58a23d2b445e6e0d24b964836b"
+  sha256 arm:   "098051ff7538eef293098a091c3d1797e0f715947f464e7b258d4e0a5bc961b7",
+         intel: "3d98e3aa6008e48d76c39e77f0200ccecc5a2f49f9c9079d9c4c3b23c55d38d7"
 
   url "https://github.com/infktd/snipt/releases/download/v#{version}/snipt-macos-#{arch}.zip"
   name "snipt"

@@ -6,18 +6,18 @@ class SniptCli < Formula
   on_macos do
     on_arm do
       url "https://github.com/infktd/snipt/releases/download/v0.1.1/snipt-macos-arm64.zip"
-      sha256 "89970eb2d437efbed7a97d0e98774d220a76f876b668767e5f5a3ff9af78e89c"
+      sha256 "098051ff7538eef293098a091c3d1797e0f715947f464e7b258d4e0a5bc961b7"
     end
     on_intel do
       url "https://github.com/infktd/snipt/releases/download/v0.1.1/snipt-macos-amd64.zip"
-      sha256 "f2d04c916a90ba8d64416ed432cbae4939a82e58a23d2b445e6e0d24b964836b"
+      sha256 "3d98e3aa6008e48d76c39e77f0200ccecc5a2f49f9c9079d9c4c3b23c55d38d7"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/infktd/snipt/releases/download/v0.1.1/snipt-linux-amd64.tar.gz"
-      sha256 "6edde3bda8512ebfd91a9392c2be31bbe1697ad8e98934b76948840ef7f20f85"
+      sha256 "00b2127ae702a53374985501f92f2660456e9231f5e4e12eacdc67020b3b3af2"
     end
   end
 
